@@ -29,6 +29,8 @@ cp "$BIN_DIR/$APP_NAME" "$APP_DIR/Contents/MacOS/$APP_NAME"
 cp "$BIN_DIR/$HELPER_NAME" "$APP_DIR/Contents/MacOS/$HELPER_NAME"  # ตัวช่วยจำกัดการชาร์จ
 cp Resources/Info.plist "$APP_DIR/Contents/Info.plist"
 cp Resources/AppIcon.icns "$APP_DIR/Contents/Resources/AppIcon.icns"
+# รูปโปรไฟล์หน้า About me (ไม่มีก็ได้ จะใช้ไอคอนแทน)
+if [ -f Resources/Profile.png ]; then cp Resources/Profile.png "$APP_DIR/Contents/Resources/Profile.png"; fi
 
 # 4) เซ็นแอปด้วยใบรับรองของเราเอง (self-signed)
 #    ทำไม: ถ้าเซ็นแบบ ad-hoc ลายเซ็นจะเปลี่ยนทุกครั้งที่ build → macOS ลืมสิทธิ์ทั้งหมด

@@ -13,9 +13,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let colorPicker = ColorPickerController()
     private let battery = BatteryManager()
     private lazy var batterySettings = BatterySettingsWindowController(manager: battery)
+    private let about = AboutWindowController()
 
     // status bar + เมนู
     private var statusItem: NSStatusItem!
+    private let createBy = NSMenuItem(title: "สร้างโดย : ozoneaik", action: nil, keyEquivalent: "")
     private let hottestMenuItem = NSMenuItem(title: "จุดที่ร้อนที่สุด: --", action: nil, keyEquivalent: "")
     private let cpuMenuItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
     private let gpuMenuItem = NSMenuItem(title: "", action: nil, keyEquivalent: "")
@@ -56,7 +58,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             item.isEnabled = false
         }
         allSensorsMenuItem.submenu = NSMenu()
-
         menu.addItem(hottestMenuItem)
         menu.addItem(cpuMenuItem)
         menu.addItem(gpuMenuItem)
@@ -84,6 +85,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(.separator())
 
         menu.addItem(makeItem("ออกจาก MacHub", #selector(quit), key: "q"))
+        menu.addItem(.separator())
+        let createByView = GradientTextView(text: createBy.title, fontSize: 32)
+        createByView.onClick = { [weak self] in self?.about.show() }
+        createBy.view = createByView
+        menu.addItem(createBy)
 
         statusItem.menu = menu
         updateMenuStates()
