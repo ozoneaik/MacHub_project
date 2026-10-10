@@ -79,6 +79,12 @@ final class ColorPickerState: ObservableObject {
         UserDefaults.standard.set(history.map(\.hex), forKey: historyKey)
     }
 
+    func clearHistory() {
+        history.removeAll()
+        current = nil
+        UserDefaults.standard.removeObject(forKey: historyKey)
+    }
+
     func copy(_ text: String) {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(text, forType: .string)
@@ -125,6 +131,13 @@ final class ColorPickerController {
                 }
             }
         }
+    }
+
+    var historyCount: Int { state.history.count }
+
+    func clearHistory() {
+        state.clearHistory()
+        panel?.orderOut(nil)
     }
 
     private func showPanel() {

@@ -6,7 +6,7 @@ import SwiftUI
 /// - ปลดล็อก: เอาเมาส์กด "เสร็จแล้ว" หรือรอครบเวลา
 @MainActor
 final class CleaningLock {
-    let duration: TimeInterval = 120
+    var duration: TimeInterval { TimeInterval(AppSettings.shared.cleaningLockDuration) }
 
     private let keyboard: KeyboardInterceptor
     private let state = CleaningLockState()

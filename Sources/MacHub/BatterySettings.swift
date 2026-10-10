@@ -2,44 +2,10 @@ import AppKit
 import SwiftUI
 import SMCKit
 
-/// หน้าต่าง "ตั้งค่าแบต"
-@MainActor
-final class BatterySettingsWindowController: NSObject, NSWindowDelegate {
-    private let manager: BatteryManager
-    private var window: NSWindow?
-
-    init(manager: BatteryManager) {
-        self.manager = manager
-        super.init()
-    }
-
-    func show() {
-        manager.checkInstallState()
-        manager.refresh()
-
-        let window = self.window ?? makeWindow()
-        self.window = window
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
-    }
-
-    private func makeWindow() -> NSWindow {
-        let window = NSWindow(
-            contentRect: CGRect(x: 0, y: 0, width: 440, height: 560),
-            styleMask: [.titled, .closable],
-            backing: .buffered,
-            defer: false
-        )
-        window.title = "ตั้งค่าแบต"
-        window.isReleasedWhenClosed = false
-        window.contentView = NSHostingView(rootView: BatterySettingsView(manager: manager))
-        window.center()
-        return window
-    }
-}
-
+/// หน้า "แบตเตอรี่" ในหน้าตั้งค่า
 struct BatterySettingsView: View {
     @ObservedObject var manager: BatteryManager
+    @ObservedObject private var settings = AppSettings.shared
 
     // ค่าที่กำลังลาก slider อยู่ (บันทึกจริงตอนปล่อยเมาส์ จะได้ไม่เรียก sudo ถี่ๆ)
     @State private var draftLimit: Double = 80
@@ -57,6 +23,7 @@ struct BatterySettingsView: View {
                         .font(.caption)
                         .foregroundStyle(.red)
                 }
+                Toggle("แสดงสถานะแบตในเมนู", isOn: $settings.showBatteryInMenu)
             } header: {
                 Text("สถานะ")
             }
@@ -170,9 +137,11 @@ struct BatterySettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .frame(width: 440)
-        .fixedSize(horizontal: false, vertical: true)
-        .onAppear { syncDraft() }
+        .onAppear {
+            manager.checkInstallState()
+            manager.refresh()
+            syncDraft()
+        }
         .onChange(of: manager.config.limit) { syncDraft() }
     }
 

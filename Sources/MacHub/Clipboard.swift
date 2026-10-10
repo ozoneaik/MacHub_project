@@ -77,7 +77,7 @@ struct ClipFile {
 final class ClipboardManager: ObservableObject {
     @Published private(set) var items: [ClipItem] = []
 
-    let maxItems = 50
+    var maxItems: Int { AppSettings.shared.clipboardMaxItems }
     private let pasteboard = NSPasteboard.general
     private var lastChangeCount: Int
     private var timer: Timer?
@@ -86,7 +86,12 @@ final class ClipboardManager: ObservableObject {
         lastChangeCount = pasteboard.changeCount
     }
 
+    var isRunning: Bool { timer != nil }
+
     func start() {
+        guard timer == nil else { return }
+        // ข้ามสิ่งที่ copy ไว้ตอนปิด feature อยู่
+        lastChangeCount = pasteboard.changeCount
         // macOS ไม่มี event แจ้งเตือนเมื่อ clipboard เปลี่ยน จึงต้องเช็คเป็นระยะ (ทุกแอปก็ทำแบบนี้)
         timer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
@@ -95,8 +100,20 @@ final class ClipboardManager: ObservableObject {
         }
     }
 
+    func stop() {
+        timer?.invalidate()
+        timer = nil
+    }
+
     func clear() {
         items.removeAll()
+    }
+
+    /// ตัดรายการเก่าทิ้งให้ไม่เกิน maxItems (เรียกเมื่อเปลี่ยนจำนวนในหน้าตั้งค่า)
+    func trim() {
+        if items.count > maxItems {
+            items.removeLast(items.count - maxItems)
+        }
     }
 
     /// คืนรายการที่ตรงกับคำค้นหา
@@ -176,9 +193,7 @@ final class ClipboardManager: ObservableObject {
         items.insert(ClipItem(content: content, date: Date()), at: 0)
 
         // เก็บไม่เกิน maxItems รายการ
-        if items.count > maxItems {
-            items.removeLast(items.count - maxItems)
-        }
+        trim()
     }
 }
 
